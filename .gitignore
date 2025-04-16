@@ -1,5 +1,7 @@
-./VulkanProject.xcodeproj
-./cmake-build-vulkanproject
-./build
-./.vscode
-
+VulkanProject.xcodeproj/
+cmake-build-vulkanproject/
+build/
+.vscode/
+.idea/
+.DS_Store
+VulkanProject.entitlements
