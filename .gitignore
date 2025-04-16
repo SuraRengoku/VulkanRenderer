@@ -1,0 +1,5 @@
+./VulkanProject.xcodeproj
+./cmake-build-vulkanproject
+./build
+./.vscode
+
