@@ -83,7 +83,6 @@ struct SwapChainSupportDetails {
   std::vector<VkPresentModeKHR> presentModes;
 };
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
 std::vector<VkSemaphore> imageAvailableSemaphores;
 std::vector<VkSemaphore> renderFinishedSemaphores;
 std::vector<VkFence> inFlightFences;
@@ -103,6 +102,9 @@ class HelloTriangleApplication {
  private:
   const uint32_t WIDTH = 800;
   const uint32_t HEIGHT = 600;
+
+  const int MAX_FRAMES_IN_FLIGHT = 2;
+
   GLFWwindow *window;
   VkInstance instance;
 
@@ -190,13 +192,14 @@ class HelloTriangleApplication {
   VkDeviceMemory indexBufferMemory;
 
   struct UniformBufferObject {
-    glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 projection;
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
   };
 
   std::vector<VkBuffer> uniformBuffers;
   std::vector<VkDeviceMemory> uniformBuffersMemory;
+  std::vector<void *> uniformBuffersMapped;
 
   void initWindow() {
     glfwInit();
@@ -231,7 +234,7 @@ class HelloTriangleApplication {
     createCommandPool();
     createVertexBuffer();
     createIndexBuffer();
-    createUniformBuffer();
+    createUniformBuffers();
     createDescriptorPool();
     createDescriptorSets();
     createCommandBuffers();
@@ -924,29 +927,32 @@ class HelloTriangleApplication {
     vkFreeMemory(device, stagingDeviceMemory, nullptr);
   }
 
-  void createUniformBuffer() {
+  void createUniformBuffers() {
     VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-    uniformBuffers.resize(swapChainImages.size());
-    uniformBuffersMemory.resize(swapChainImages.size());
+    uniformBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+    uniformBuffersMemory.resize(MAX_FRAMES_IN_FLIGHT);
+    uniformBuffersMapped.resize(MAX_FRAMES_IN_FLIGHT);
 
-    for (size_t i = 0; i < swapChainImages.size(); ++i) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
       createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                        VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                    uniformBuffers[i], uniformBuffersMemory[i]);
+      vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0,
+                  &uniformBuffersMapped[i]);
     }
   }
 
   void createDescriptorPool() {
     VkDescriptorPoolSize poolSize = {};
     poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    poolSize.descriptorCount = static_cast<uint32_t>(swapChainImages.size());
+    poolSize.descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     VkDescriptorPoolCreateInfo poolCreateInfo = {};
     poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolCreateInfo.poolSizeCount = 1;
     poolCreateInfo.pPoolSizes = &poolSize;
-    poolCreateInfo.maxSets = static_cast<uint32_t>(swapChainImages.size());
+    poolCreateInfo.maxSets = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
 
     if (vkCreateDescriptorPool(device, &poolCreateInfo, nullptr,
                                &descriptorPool) != VK_SUCCESS) {
@@ -955,22 +961,22 @@ class HelloTriangleApplication {
   }
 
   void createDescriptorSets() {
-    std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(),
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT,
                                                descriptorSetLayout);
     VkDescriptorSetAllocateInfo setAllocateInfo = {};
     setAllocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     setAllocateInfo.descriptorPool = descriptorPool;
     setAllocateInfo.descriptorSetCount =
-        static_cast<uint32_t>(swapChainImages.size());
+        static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     setAllocateInfo.pSetLayouts = layouts.data();
 
-    descriptorSets.resize(swapChainImages.size());
+    descriptorSets.resize(MAX_FRAMES_IN_FLIGHT);
     if (vkAllocateDescriptorSets(device, &setAllocateInfo,
                                  &descriptorSets[0]) != VK_SUCCESS) {
       throw std::runtime_error("failed to allocate descriptor sets!");
     }
 
-    for (size_t i = 0; i < swapChainImages.size(); ++i) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
       VkDescriptorBufferInfo descriptorBufferInfo = {};
       descriptorBufferInfo.buffer = uniformBuffers[i];
       descriptorBufferInfo.offset = 0;
@@ -1084,7 +1090,8 @@ class HelloTriangleApplication {
     uboSetLayoutBinding.descriptorType =
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;  // type
     uboSetLayoutBinding.descriptorCount = 1;
-    uboSetLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT; // in witch stage will be used
+    uboSetLayoutBinding.stageFlags =
+        VK_SHADER_STAGE_VERTEX_BIT;  // in witch stage will be used
     uboSetLayoutBinding.pImmutableSamplers = nullptr;
 
     VkDescriptorSetLayoutCreateInfo layoutCreateInfo = {};
@@ -1151,26 +1158,12 @@ class HelloTriangleApplication {
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-    VkViewport viewport = {};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)swapChainExtent.width;
-    viewport.height = (float)swapChainExtent.height;
-    viewport.minDepth = 0.0f;  //[0.0, 1.0] it can bigger than maxDepth
-    viewport.maxDepth = 1.0f;  //[0.0, 1.0]
-
-    VkRect2D scissor = {};
-    scissor.offset = {0, 0};
-    scissor.extent = swapChainExtent;
-
     // we must combine viewport and scissor together
 
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
-    viewportState.pViewports = &viewport;
     viewportState.scissorCount = 1;
-    viewportState.pScissors = &scissor;
 
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
     rasterizer.sType =
@@ -1188,8 +1181,9 @@ class HelloTriangleApplication {
     rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
     rasterizer.lineWidth =
         1.0f;  // the max number of fragment a line width can hold
-    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;     // back culling
-    rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;  // front face is clockwise, flip y
+    rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;  // back culling
+    rasterizer.frontFace =
+        VK_FRONT_FACE_COUNTER_CLOCKWISE;  // front face is clockwise, flip y
     rasterizer.depthBiasEnable = VK_FALSE;
     rasterizer.depthBiasConstantFactor = 0.0f;
     rasterizer.depthBiasClamp = 0.0f;
@@ -1236,12 +1230,12 @@ class HelloTriangleApplication {
 
     // limited items can be altered dynamically without reconstructing the
     // pipeline
-    VkDynamicState dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT,
-                                      VK_DYNAMIC_STATE_LINE_WIDTH};
+    std::vector<VkDynamicState> dynamicStates = {VK_DYNAMIC_STATE_VIEWPORT,
+                                      VK_DYNAMIC_STATE_SCISSOR};
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicState.dynamicStateCount = 2;
-    dynamicState.pDynamicStates = dynamicStates;
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+    dynamicState.pDynamicStates = dynamicStates.data();
     // we should set items included in the dynamicStates later
 
     // define the shader usage and uniform variables which can be dynamically
@@ -1277,7 +1271,7 @@ class HelloTriangleApplication {
     pipelineInfo.pMultisampleState = &multisampling;
     pipelineInfo.pDepthStencilState = nullptr;
     pipelineInfo.pColorBlendState = &colorBlending;
-    pipelineInfo.pDynamicState = nullptr;
+    pipelineInfo.pDynamicState = &dynamicState;
 
     pipelineInfo.layout = pipelineLayout;
 
@@ -1327,7 +1321,7 @@ class HelloTriangleApplication {
     VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
-    poolInfo.flags = 0;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
     /*
      VK_COMMAND_POOL_CREATE_TRANSIENT_BIT -> command buffer will be used to
@@ -1342,7 +1336,7 @@ class HelloTriangleApplication {
   }
 
   void createCommandBuffers() {
-    commandBuffers.resize(swapChainFramebuffers.size());
+    commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
     // allocate command buffer object
     VkCommandBufferAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1359,64 +1353,77 @@ class HelloTriangleApplication {
         VK_SUCCESS) {
       throw std::runtime_error("failed to allocate command buffers!");
     }
+  }
 
-    for (size_t i = 0; i < commandBuffers.size(); ++i) {
-      VkCommandBufferBeginInfo beginInfo = {};
-      beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIdx) {
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+
+    if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {
+      throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    VkRenderPassBeginInfo renderPassBeginInfo = {};
+    renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass = renderPass;
+    renderPassBeginInfo.framebuffer = swapChainFramebuffers[imageIdx];
+    renderPassBeginInfo.renderArea.offset = {0, 0};
+    renderPassBeginInfo.renderArea.extent = swapChainExtent;
+
+    VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+    renderPassBeginInfo.clearValueCount = 1;
+    renderPassBeginInfo.pClearValues = &clearColor;
+
+    // enter the render pass
+    {
       /*
-       VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT -> one time
-       VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT -> auxiliary command
-       buffer VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT -> multiple times
-       */
-      beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-      beginInfo.pInheritanceInfo = nullptr;
-      if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-      }
-
-      VkRenderPassBeginInfo renderPassInfo = {};
-      renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-      renderPassInfo.renderPass = renderPass;
-      renderPassInfo.framebuffer = swapChainFramebuffers[i];
-      renderPassInfo.renderArea.offset = {0, 0};
-      renderPassInfo.renderArea.extent = swapChainExtent;
-
-      VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
-      renderPassInfo.clearValueCount = 1;
-      renderPassInfo.pClearValues =
-          &clearColor;  // ->> VK_ATTACHMENT_LOAD_OP_CLEAR
-
-      /*
-       VK_SUBPASS_CONTENTS_INLINE -> no auxiliary command buffer
-       VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS -> auxiliary command buffer
-       exist
-       */
-      vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo,
+      VK_SUBPASS_CONTENTS_INLINE -> no auxiliary command buffer
+      VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS -> auxiliary command buffer
+      exist
+      */
+      vkCmdBeginRenderPass(commandBuffer, &renderPassBeginInfo,
                            VK_SUBPASS_CONTENTS_INLINE);
-      vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS,
+      vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                         graphicsPipeline);
+
+      VkViewport viewport = {};
+      viewport.x = 0.0f;
+      viewport.y = 0.0f;
+      viewport.width = (float)swapChainExtent.width;
+      viewport.height = (float)swapChainExtent.height;
+      viewport.minDepth = 0.0f;
+      viewport.maxDepth = 1.0f;
+      vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+      VkRect2D scissor = {};
+      scissor.offset = {0, 0};
+      scissor.extent = swapChainExtent;
+      vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
       VkBuffer vertexBuffers[] = {vertexBuffer};
       VkDeviceSize offsets[] = {0};
-      vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
-      vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0,
-                           VK_INDEX_TYPE_UINT16);
-      vkCmdBindDescriptorSets(commandBuffers[i],
-                              VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,
-                              0, 1, &descriptorSets[i], 0, nullptr);
+      vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
+
+      vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+      vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
+                              pipelineLayout, 0, 1,
+                              &descriptorSets[currentFrame], 0, nullptr);
+
       /**
        * @param vertexCount
        * @param instanceCount -> if 1, then no instance rendering
        * @param firstVertex
        * @param firstInstance
        */
-      vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()),
-                       1, 0, 0, 0);
-      vkCmdEndRenderPass(commandBuffers[i]);
+      vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1,
+                       0, 0, 0);
 
-      if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-      }
+      vkCmdEndRenderPass(commandBuffer);
+    }
+
+    if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+      throw std::runtime_error("failed to record command buffer!");
     }
   }
 
@@ -1476,22 +1483,17 @@ class HelloTriangleApplication {
     ubo.view =
         glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f),
                     glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.projection = glm::perspective(
-        glm::radians(45.0f),
-        (float)swapChainExtent.width / (float)swapChainExtent.height, 0.1f,
+    ubo.proj = glm::perspective(
+        glm::radians(45.0f), swapChainExtent.width / (float)swapChainExtent.height, 0.1f,
         10.0f);
-    ubo.projection[1][1] *= -1;  // flip y, because glm is designed for OpenGL
+    ubo.proj[1][1] *= -1;  // flip y, because glm is designed for OpenGL
 
-//    // Debug log for MVP matrix
-//    std::cout << "Model Matrix: " << glm::to_string(ubo.model) << std::endl;
-//    std::cout << "View Matrix: " << glm::to_string(ubo.view) << std::endl;
-//    std::cout << "Projection Matrix: " << glm::to_string(ubo.projection) << std::endl;
+    //    // Debug log for MVP matrix
+    //    std::cout << "Model Matrix: " << glm::to_string(ubo.model) << std::endl;
+    //    std::cout << "View Matrix: " << glm::to_string(ubo.view) << std::endl;
+    //    std::cout << "Projection Matrix: " << glm::to_string(ubo.projection) << std::endl;
 
-    void *data;
-    vkMapMemory(device, uniformBuffersMemory[curImageIdx], 0, sizeof(ubo), 0,
-                &data);
-    memcpy(data, &ubo, sizeof(ubo));
-    vkUnmapMemory(device, uniformBuffersMemory[curImageIdx]);
+    memcpy(uniformBuffersMapped[curImageIdx], &ubo, sizeof(ubo));
   }
 
   void drawFrame() {
@@ -1521,9 +1523,12 @@ class HelloTriangleApplication {
       throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    updateUniformBuffer(imageIndex);
+    updateUniformBuffer(currentFrame);
 
     vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+    vkResetCommandBuffer(commandBuffers[currentFrame], /*VkCommandBufferResetFlagBits*/ 0);
+    recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1536,7 +1541,7 @@ class HelloTriangleApplication {
     submitInfo.pWaitSemaphores = waitSemaphores;
     submitInfo.pWaitDstStageMask = waitStages;
     submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+    submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
     // command finish
     VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
@@ -1623,7 +1628,7 @@ class HelloTriangleApplication {
 
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
-    for (size_t i = 0; i < uniformBuffers.size(); ++i) {
+    for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
       vkDestroyBuffer(device, uniformBuffers[i], nullptr);
       vkFreeMemory(device, uniformBuffersMemory[i], nullptr);
     }
