@@ -11,15 +11,21 @@ endif()
 if (NOT DEFINED ENV{GLM_HOME})
     message(FATAL_ERROR "found no env named GLM_HOME")
 endif()
+if (NOT DEFINED ENV{VMA_HOME})
+    message(FATAL_ERROR "found no env named VMA_HOME")
+endif()
 
 # 暂存环境变量
 set(GLFW_HOME $ENV{GLFW_HOME})
 set(GLM_HOME $ENV{GLM_HOME})
+set(VMA_HOME $ENV{VMA_HOME})
 
-add_executable(VulkanProject main.cpp)
+add_executable(VulkanProject main.cpp
+        Header/common.h)
 
 # 添加 GLFW3 预编译库
-add_library(glfw SHARED IMPORTED)
+add_library(glfw SHARED IMPORTED
+        Header/common.h)
 SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib/libglfw.3.dylib")
 
 # GLM
@@ -31,5 +37,14 @@ target_link_libraries(${PROJECT_NAME} glfw Vulkan::Vulkan)
 #include_directories(${Vulkan_INCLUDE_DIRS})
 #target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 
+# VulkanMemoryAllocator
+include_directories(${VMA_HOME}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${VMA_HOME}/include)
+
+#set(VulkanMemoryAllocator_DIR )
+#find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+#target_link_libraries(${PROJECT_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)
+
 # copy the shader files to the cmake-build-debug folder
 file(COPY shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
