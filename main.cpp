@@ -805,6 +805,12 @@ class Application {
 
     cleanupSwapChain();
 
+    // temporarily clean imageview, image and corresponding memory of depth
+    // these will be recreated in the createDepthResources()
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vkDestroyImage(device, depthImage, nullptr);
+    vkFreeMemory(device, depthImageMemory, nullptr);
+
     createSwapChain();
     createImageViews();
     createRenderPass();
