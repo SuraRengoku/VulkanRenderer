@@ -20,16 +20,31 @@ set(GLFW_HOME $ENV{GLFW_HOME})
 set(GLM_HOME $ENV{GLM_HOME})
 set(VMA_HOME $ENV{VMA_HOME})
 
+set(LUA_SRC_PATH Src/luasrc)
+
 add_executable(VulkanProject main.cpp
-        Header/common.h)
+        Header/common.h
+        Header/stb_image.h)
 
 # add GLFW3 lib
-add_library(glfw SHARED IMPORTED
-        Header/common.h)
+add_library(glfw SHARED IMPORTED)
 SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib/libglfw.3.dylib")
 
 # GLM
 include_directories(${GLM_INCLUDE_DIRS})
+
+#Lua
+include_directories(${LUA_SRC_PATH})
+aux_source_directory(${LUA_SRC_PATH} LUA_CORE)
+set(LIB_SRC ${LUA_CORE})
+list(REMOVE_ITEM LIB_SRC Src/luasrc/lua.c Src/luasrc/luac.c)
+add_library(lualib ${LIB_SRC})
+
+add_executable(lua ${LUA_SRC_PATH}/lua.c)
+target_link_libraries(lua lualib)
+
+add_executable(luac ${LUA_SRC_PATH}/luac.c)
+target_link_libraries(luac lualib)
 
 # Vulkan
 find_package(Vulkan REQUIRED)
@@ -52,7 +67,7 @@ if (NOT GLSLANG_VALIDATOR)
 endif ()
 
 # 2. define output dir
-set(SPIRV_BIN ${CMAKE_BINARY_DIR}/shaders)
+set(SPIRV_BIN ${CMAKE_BINARY_DIR}/Shaders)
 file(MAKE_DIRECTORY ${SPIRV_BIN})
 
 # 3. compile shader
@@ -75,10 +90,13 @@ endfunction()
 #file(COPY shaders DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 # 4. scan -> generate spv shaders
-file(GLOB_RECURSE GLSL_SHADERS "${CMAKE_SOURCE_DIR}/shaders/*.vert" "${CMAKE_SOURCE_DIR}/shaders/*.frag")
+file(GLOB_RECURSE GLSL_SHADERS "${CMAKE_SOURCE_DIR}/Shaders/*.vert" "${CMAKE_SOURCE_DIR}/Shaders/*.frag")
 foreach (S ${GLSL_SHADERS})
     compile_glsl(${S})
 endforeach ()
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE __SHADER_PATH__="${SPIRV_BIN}/")
+target_compile_definitions(${PROJECT_NAME} PRIVATE __TEXTURE_PATH__="${CMAKE_SOURCE_DIR}/Textures/")
 
 # 5. create virtual target -> let the app depend
 add_custom_target(Shaders ALL DEPENDS ${SPV_SHADERS})
