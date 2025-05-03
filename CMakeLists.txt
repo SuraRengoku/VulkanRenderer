@@ -24,7 +24,8 @@ set(LUA_SRC_PATH Src/luasrc)
 
 add_executable(VulkanProject main.cpp
         Header/common.h
-        Header/stb_image.h)
+        Header/stb_image.h
+        Header/tiny_obj_loader.h)
 
 # add GLFW3 lib
 add_library(glfw SHARED IMPORTED)
@@ -97,6 +98,7 @@ endforeach ()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE __SHADER_PATH__="${SPIRV_BIN}/")
 target_compile_definitions(${PROJECT_NAME} PRIVATE __TEXTURE_PATH__="${CMAKE_SOURCE_DIR}/Textures/")
+target_compile_definitions(${PROJECT_NAME} PRIVATE __MODEL_PATH__="${CMAKE_SOURCE_DIR}/Models/")
 
 # 5. create virtual target -> let the app depend
 add_custom_target(Shaders ALL DEPENDS ${SPV_SHADERS})

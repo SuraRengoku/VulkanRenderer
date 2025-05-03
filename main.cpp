@@ -31,6 +31,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "Header/stb_image.h"
 
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "Header/tiny_obj_loader.h"
+
 VkResult CreateDebugUtilsMessengerEXT(
     VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
     const VkAllocationCallbacks *pAllocator,
@@ -807,9 +810,11 @@ class Application {
 
     // temporarily clean imageview, image and corresponding memory of depth
     // these will be recreated in the createDepthResources()
-    vkDestroyImageView(device, depthImageView, nullptr);
-    vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
+//    vkDestroyImageView(device, depthImageView, nullptr);
+//    vkDestroyImage(device, depthImage, nullptr);
+//    vkFreeMemory(device, depthImageMemory, nullptr);
+
+//    cleanupDepthResources();
 
     createSwapChain();
     createImageViews();
@@ -923,6 +928,12 @@ class Application {
         createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
                           VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  }
+
+  void cleanupDepthResources() {
+      vkDestroyImage(device, depthImage, nullptr);
+      vkDestroyImageView(device, depthImageView, nullptr);
+      vkFreeMemory(device, depthImageMemory, nullptr);
   }
 
   VkFormat findDepthFormat() {
@@ -2009,6 +2020,10 @@ class Application {
   }
 
   void cleanupSwapChain() {
+    vkDestroyImageView(device, depthImageView, nullptr);
+    vkDestroyImage(device, depthImage, nullptr);
+    vkFreeMemory(device, depthImageMemory, nullptr);
+
     for (auto framebuffer : swapChainFramebuffers)
       vkDestroyFramebuffer(device, framebuffer, nullptr);
     vkFreeCommandBuffers(device, commandPool,
@@ -2028,7 +2043,7 @@ class Application {
     vkDestroyImageView(device, textureImageView, nullptr);
     vkDestroySampler(device, textureSampler, nullptr);
 
-    vkDestroyImageView(device, depthImageView, nullptr);
+//    vkDestroyImageView(device, depthImageView, nullptr);
 
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
 
@@ -2046,8 +2061,10 @@ class Application {
     vkFreeMemory(device, indexBufferMemory, nullptr);
     vkDestroyImage(device, textureImage, nullptr);
     vkFreeMemory(device, textureImageMemory, nullptr);
-    vkDestroyImage(device, depthImage, nullptr);
-    vkFreeMemory(device, depthImageMemory, nullptr);
+//    vkDestroyImage(device, depthImage, nullptr);
+//    vkFreeMemory(device, depthImageMemory, nullptr);
+
+//    cleanupDepthResources();
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; ++i) {
       vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
