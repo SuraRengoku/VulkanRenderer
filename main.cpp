@@ -1,7 +1,9 @@
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_macos.h>
 
-#include <__config>
+#if defined(__APPLE__) && defined(__clang__)
+  #include <__config>
+#endif
 #include <array>
 #include <cstdlib>
 #include <fstream>

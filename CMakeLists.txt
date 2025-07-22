@@ -3,6 +3,7 @@ project(VulkanRenderer)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # check env variable
 if (NOT DEFINED ENV{GLFW_HOME})
@@ -37,8 +38,15 @@ add_executable(VulkanRenderer main.cpp
 )
 
 # add GLFW3 lib
-add_library(glfw SHARED IMPORTED)
-SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib/libglfw.3.dylib")
+
+if(WIN32)
+    add_library(glfw STATIC IMPORTED)
+    SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib/libglfw3.a")
+    include_directories(${GLFW_HOME}/include)
+elseif(APPLE) 
+    add_library(glfw SHARED IMPORTED)
+    SET_TARGET_PROPERTIES(glfw PROPERTIES IMPORTED_LOCATION "${GLFW_HOME}/lib/libglfw.3.dylib")
+endif()
 
 # GLM
 include_directories(${GLM_INCLUDE_DIRS})
@@ -60,6 +68,9 @@ target_link_libraries(luac lualib)
 include_directories(${IMGUI_DIR_PATH} ${IMGUI_DIR_PATH}/backends)
 
 # Vulkan
+if(WIN32)
+    include_directories($ENV{VULKAN_SDK}/Include)
+endif()
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} glfw Vulkan::Vulkan)
 #include_directories(${Vulkan_INCLUDE_DIRS})
