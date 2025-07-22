@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.17)
-project(VulkanProject)
+project(VulkanRenderer)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,7 +23,7 @@ set(VMA_HOME $ENV{VMA_HOME})
 set(LUA_SRC_PATH Src/luasrc)
 set(IMGUI_DIR_PATH Src/imgui-1.91.9b)
 
-add_executable(VulkanProject main.cpp
+add_executable(VulkanRenderer main.cpp
         Header/common.h
         Header/stb_image.h
         Header/tiny_obj_loader.h

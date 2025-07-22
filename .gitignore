@@ -1,7 +1,5 @@
-VulkanProject.xcodeproj/
 build/
 .cache/
 .vscode/
 .idea/
 .DS_Store
-VulkanProject.entitlements
