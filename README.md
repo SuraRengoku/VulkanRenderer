@@ -6,7 +6,7 @@
 
 ## Installation
 ### MacOS/Linux
-on MaxOS, we use default C++ compiler clang, which is included in the Xcode-tools
+on MacOS, we use default C++ compiler clang, which is included in the Xcode-tools
 
 #### GLFW
 
