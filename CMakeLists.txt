@@ -21,11 +21,20 @@ set(GLM_HOME $ENV{GLM_HOME})
 set(VMA_HOME $ENV{VMA_HOME})
 
 set(LUA_SRC_PATH Src/luasrc)
+set(IMGUI_DIR_PATH Src/imgui-1.91.9b)
 
 add_executable(VulkanProject main.cpp
         Header/common.h
         Header/stb_image.h
-        Header/tiny_obj_loader.h)
+        Header/tiny_obj_loader.h
+        ${IMGUI_DIR_PATH}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR_PATH}/backends/imgui_impl_vulkan.cpp
+        ${IMGUI_DIR_PATH}/imgui.cpp
+        ${IMGUI_DIR_PATH}/imgui_draw.cpp
+        ${IMGUI_DIR_PATH}/imgui_demo.cpp
+        ${IMGUI_DIR_PATH}/imgui_tables.cpp
+        ${IMGUI_DIR_PATH}/imgui_widgets.cpp
+)
 
 # add GLFW3 lib
 add_library(glfw SHARED IMPORTED)
@@ -47,6 +56,9 @@ target_link_libraries(lua lualib)
 add_executable(luac ${LUA_SRC_PATH}/luac.c)
 target_link_libraries(luac lualib)
 
+#ImGui
+include_directories(${IMGUI_DIR_PATH} ${IMGUI_DIR_PATH}/backends)
+
 # Vulkan
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} glfw Vulkan::Vulkan)
@@ -57,8 +69,8 @@ target_link_libraries(${PROJECT_NAME} glfw Vulkan::Vulkan)
 include_directories(${VMA_HOME}/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${VMA_HOME}/include)
 
-#set(VulkanMemoryAllocator_DIR )
-#find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+set(VulkanMemoryAllocator_DIR)
+# find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 #target_link_libraries(${PROJECT_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator)
 
 # 1. locate glslangValidator

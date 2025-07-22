@@ -1,6 +1,6 @@
 VulkanProject.xcodeproj/
-cmake-build-vulkanproject/
 build/
+.cache/
 .vscode/
 .idea/
 .DS_Store
