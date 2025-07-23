@@ -28,16 +28,16 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include "Header/common.h"
+#include "common.h"
 
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "Header/stb_image.h"
+#include "stb_image.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "Header/tiny_obj_loader.h"
+#include "tiny_obj_loader.h"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -340,6 +340,10 @@ class Application {
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
     requiredExtensions.emplace_back(
         VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
+
+#if defined __WIN32__
+    requiredExtensions.emplace_back("VK_KHR_portability_enumeration");
 #endif
 
     createInfo.enabledExtensionCount = (uint32_t)requiredExtensions.size();
@@ -1734,8 +1738,8 @@ class Application {
   }
 
   void createGraphicsPipeline() {
-    auto vertShaderCode = readFile("vert.spv");
-    auto fragShaderCode = readFile("frag.spv");
+    auto vertShaderCode = readFile("Triangle.vert.hlsl.spv");
+    auto fragShaderCode = readFile("Triangle.frag.glsl.spv"); 
 
     VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
     VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
