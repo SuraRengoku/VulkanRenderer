@@ -18,13 +18,19 @@ set(GLM_HOME $ENV{GLM_HOME})
 set(VMA_HOME $ENV{VMA_HOME})
 
 # main executable files
+include_directories(Header)
+include_directories(Src/Vulkan_Support/headers)
+
+file(GLOB_RECURSE VULKAN_SUPPORT_SOURCES "Src/Vulkan_Support/sources/*.cpp")
+
 add_executable(VulkanRenderer main.cpp
+    ${VULKAN_SUPPORT_SOURCES}
     Header/common.h
     Header/stb_image.h
     Header/tiny_obj_loader.h
 )
 
-include_directories(Header)
+target_include_directories(${PROJECT_NAME} PRIVATE Src/Vulkan_Support/headers)
 
 # GLFW
 if(WIN32)
