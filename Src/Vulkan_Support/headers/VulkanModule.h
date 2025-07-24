@@ -50,32 +50,9 @@
 
 #include "UniformData.h"
 
-// even though specific Vulkan implementation may support window system, these
-// implementations in all platform may not support the same feature
-struct QueueFamilyIndices {
-    int graphicsFamily = -1;
-    int presentFamily = -1;
-    bool isComplete() const { return graphicsFamily >= 0 && presentFamily >= 0; }
-};
-
-struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> presentModes;
-};
-
-namespace std {
-    template <> struct hash<Vertex> {
-        size_t operator()(Vertex const &vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
-                    (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-}  // namespace std
-
 class VulkanModule {
 public:
-    void init();
+    void initVulkan();
     void cleanup();
     void drawFrame();
     void recreateSwapChain();
@@ -85,6 +62,7 @@ public:
 private:
     void createInstance();
     void setupDebugMessenger();
+    void createSurface();
     void pickPhysicalDevice();
     void createLogicalDevice();
     void createSwapChain();

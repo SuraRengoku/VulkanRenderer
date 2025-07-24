@@ -1,9 +1,10 @@
 // VulkanModule.cpp
 #include "VulkanModule.h"
 
-void VulkanModule::init() {
+void VulkanModule::initVulkan() {
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
@@ -25,6 +26,13 @@ void VulkanModule::init() {
     createDescriptorSets();
     createCommandBuffers();
     createSyncObjects();
+}
+
+void VulkanModule::createSurface() {
+    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("failed to create window surface");
+    }
 }
 
 void VulkanModule::cleanup() {

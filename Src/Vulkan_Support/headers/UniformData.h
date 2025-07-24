@@ -12,6 +12,8 @@
 
 #include <vulkan/vulkan.h>
 
+#include "common.h"
+
 struct UniformBufferObject {
     alignas(16) glm::mat4 model;
     alignas(16) glm::mat4 view;
@@ -61,3 +63,56 @@ struct Vertex {
             texCoord == other.texCoord;
     }
 };
+
+// even though specific Vulkan implementation may support window system, these
+// implementations in all platform may not support the same feature
+struct QueueFamilyIndices {
+    int graphicsFamily = -1;
+    int presentFamily = -1;
+    bool isComplete() const { return graphicsFamily >= 0 && presentFamily >= 0; }
+};
+
+struct SwapChainSupportDetails {
+    VkSurfaceCapabilitiesKHR capabilities;
+    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkPresentModeKHR> presentModes;
+};
+
+namespace std {
+    template <> struct hash<Vertex> {
+        size_t operator()(Vertex const &vertex) const {
+            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+                    (hash<glm::vec2>()(vertex.texCoord) << 1);
+        }
+    };
+}  // namespace std
+
+struct TextureData {
+    int width;
+    int height;
+    int channels;
+    std::vector<unsigned char> pixels;
+};
+
+struct MaterialData {
+    MaterialType type = MaterialType::Lambert; 
+
+    glm::vec3 baseColor = glm::vec3(1.0f);     
+    float metallic = 0.0f;                     
+    float roughness = 1.0f;                    
+    float opacity = 1.0f;                      
+    float emissiveStrength = 0.0f;             
+
+    int albedoTexture = -1;
+    int normalTexture = -1;
+    int metallicTexture = -1;
+    int roughnessTexture = -1;
+    int aoTexture = -1;
+    int emissiveTexture = -1;
+};
+
+struct BufferData {};
+
+struct MeshData {};
+
+struct AnimationData {};
