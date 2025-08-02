@@ -5,7 +5,7 @@
 
 class Lighting {
 public:
-
+    Lighting();
 private:
-
+    
 };

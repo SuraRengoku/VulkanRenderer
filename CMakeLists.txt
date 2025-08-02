@@ -21,16 +21,19 @@ set(VMA_HOME $ENV{VMA_HOME})
 include_directories(Header)
 include_directories(Src/Vulkan_Support/headers)
 include_directories(Src/ResourceManager/headers)
-include_directories(Src/UIManager/headers)
+# include_directories(Src/UIManager/headers)
+include_directories(Src/Application/headers)
 
 file(GLOB_RECURSE VULKAN_SUPPORT_SOURCES "Src/Vulkan_Support/sources/*.cpp")
 file(GLOB_RECURSE RESOURCE_MANAGER_SOURCES "Src/ResourceManager/sources/*.cpp")
-file(GLOB_RECURSE UI_MANAGER_SOURCES "Src/UIManager/sources/*.cpp")
+# file(GLOB_RECURSE UI_MANAGER_SOURCES "Src/UIManager/sources/*.cpp")
+file(GLOB_RECURSE APPLICATION_SOURCES "Src/Application/sources/*.cpp")
 
 add_executable(VulkanRenderer main.cpp
     ${VULKAN_SUPPORT_SOURCES}
     ${RESOURCE_MANAGER_SOURCES}
-    ${UI_MANAGER_SOURCES}
+    # ${UI_MANAGER_SOURCES}
+	${APPLICATION_SOURCES}
     Header/common.h
     Header/stb_image.h
     Header/tiny_obj_loader.h
@@ -38,7 +41,8 @@ add_executable(VulkanRenderer main.cpp
 
 target_include_directories(${PROJECT_NAME} PRIVATE Src/Vulkan_Support/headers)
 target_include_directories(${PROJECT_NAME} PRIVATE Src/ResourceManager/headers)
-target_include_directories(${PROJECT_NAME} PRIVATE Src/UIManager/headers)
+# target_include_directories(${PROJECT_NAME} PRIVATE Src/UIManager/headers)
+target_include_directories(${PROJECT_NAME} PRIVATE Src/Application/headers)
 
 # GLFW
 if(WIN32)

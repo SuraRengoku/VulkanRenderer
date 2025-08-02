@@ -7,6 +7,12 @@
 
 #include <string>
 
+enum class WidgetStatus : int {
+	ACTIVATED,
+	DEACTIVATED,
+	GETFOCUSED
+};
+
 enum class SPVStage : int {
     VERT,
     FRAG,

@@ -1,6 +1,9 @@
 // VulkanModule.h
 #pragma once
 
+#include <_types/_uint32_t.h>
+#include <_types/_uint64_t.h>
+#include <memory>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_macos.h>
 
@@ -41,10 +44,11 @@
 #include "imgui_impl_vulkan.h"
 
 #include "UniformData.h"
-#include "Loader.h"
+#include "Scene.h"
 
 class VulkanModule {
 public:
+    VulkanModule(uint32_t width = 800, uint32_t height = 600, int maxFIF = 2);
     void initVulkan();
     void cleanup();
     void drawFrame();
@@ -53,6 +57,7 @@ public:
     void updateUniformBuffer(uint32_t currentImage);
 
 private:
+    void initWindow();
     void createInstance();
     void setupDebugMessenger();
     void createSurface();
@@ -68,6 +73,7 @@ private:
     void createCommandPool();
     void createColorResources();
     void createDepthResources();
+	void cleanupDepthResources();
     void createTextureImage(const std::string &filename);
     void createTextureImageView();
     void createTextureSampler();
@@ -78,6 +84,7 @@ private:
     void createDescriptorPool();
     void createDescriptorSets();
     void createCommandBuffers();
+	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIdx);
     void createSyncObjects();
     void cleanupSwapChain();
 
@@ -112,6 +119,7 @@ private:
     std::vector<const char *> getRequiredExtensions() const;
 
     int rateDeviceSuitability(VkPhysicalDevice device);
+	bool isDeviceSuitable(VkPhysicalDevice device);
 
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
@@ -124,6 +132,7 @@ private:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentMode);
 
     bool checkValidationLayerSupport();
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 
     VkSampleCountFlagBits getMaxUsableSampleCount();
 
@@ -131,6 +140,8 @@ private:
                                             const VkAllocationCallbacks *pAllocator,
                                             VkDebugUtilsMessengerEXT *pDebugMessenger);
 
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT callback, const VkAllocationCallbacks *pAllocator);
+    
     VkFormat findDepthFormat();
 
     static bool hasStencilComponent(VkFormat format);
@@ -147,6 +158,10 @@ private:
 
     VkCommandBuffer beginSingleTimeCommands();
     void endSingleTimeCommands(VkCommandBuffer cmdBuffer);
+
+    static void framebufferResizedCallback(GLFWwindow *window, int width, int height);
+
+	void createSemaphores(); // deprecated
 
     GLFWwindow *window;
 
@@ -172,16 +187,6 @@ private:
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
     VkPipeline graphicsPipeline;
-
-    // Buffers
-    VkBuffer vertexBuffer;
-    VkDeviceMemory vertexBufferMemory;
-    VkBuffer indexBuffer;
-    VkDeviceMemory indexBufferMemory;
-
-    std::vector<VkBuffer> uniformBuffers;
-    std::vector<VkDeviceMemory> uniformBuffersMemory;
-    std::vector<void *> uniformBuffersMapped;
 
     // Descriptor
     VkDescriptorPool descriptorPool;
@@ -211,8 +216,8 @@ private:
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
-
     size_t currentFrame = 0;
+    
     bool framebufferResized = false;
 
 #ifdef NDEBUG
@@ -221,8 +226,6 @@ const bool enableValidationLayers = false;
 const bool enableValidationLayers = true;
 #endif
 
-    static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
       // wait to be checked
     const std::vector<const char *> validationLayers = {
         "VK_LAYER_KHRONOS_validation"};
@@ -230,8 +233,24 @@ const bool enableValidationLayers = true;
     const std::vector<const char *> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-    std::vector<Vertex> vertices = {};
-    std::vector<uint32_t> indices = {};
+    // std::vector<Vertex> vertices = {};
+    // std::vector<uint32_t> indices = {};
+
+    std::unique_ptr<Scene> scene; // include (loaders, lightings ...)
+
+    // Buffers
+    VkBuffer vertexBuffer;
+    VkDeviceMemory vertexBufferMemory;
+    VkBuffer indexBuffer;
+    VkDeviceMemory indexBufferMemory;
+
+    std::vector<VkBuffer> uniformBuffers;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
+    std::vector<void *> uniformBuffersMapped;
+
+    uint32_t WIDTH;
+    uint32_t HEIGHT;
+    int MAX_FRAMES_IN_FLIGHT;
 };
 
 
