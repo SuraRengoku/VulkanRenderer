@@ -3,7 +3,6 @@
 
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_macos.h>
-#include <cstdint>
 
 #if defined(__APPLE__) && defined(__clang__)
   #include <__config>
@@ -17,7 +16,6 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <vector>
-
 
 #include "vulkan/vulkan_core.h"
 #define GLFW_INCLUDE_VULKAN
@@ -38,17 +36,12 @@
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 
 #include "UniformData.h"
+#include "Loader.h"
 
 class VulkanModule {
 public:

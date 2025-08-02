@@ -53,6 +53,12 @@ enum class MaterialType : int {
     Custom          
 };
 
+enum class LightType : int {
+    Point,
+    Spot,
+    Plane
+};
+
 template<typename Enum>
 std::string EnumToString(Enum e) {
     return "Unknown Enum";
@@ -113,6 +119,15 @@ inline std::string EnumToString<MaterialType>(MaterialType type) {
         case MaterialType::Anisotropic:     return "Anisotropic";
         case MaterialType::Custom:          return "Custom";
         default:                            return "Unknown";
+    }
+}
+
+template<>
+inline std::string EnumToString<LightType>(LightType type) {
+    switch (type) {
+        case LightType::Point:  return "Point";
+        case LightType::Spot:   return "Spot";
+        case LightType::Plane:  return "Plane";
     }
 }
 

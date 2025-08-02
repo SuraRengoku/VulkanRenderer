@@ -2,7 +2,6 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -111,8 +110,28 @@ struct MaterialData {
     int emissiveTexture = -1;
 };
 
+// TODO 
 struct BufferData {};
-
+// TODO
 struct MeshData {};
-
+// TODO
 struct AnimationData {};
+
+struct LightData {
+    LightType type = LightType::Point;
+
+    glm::vec3 position = glm::vec3(0.0f);
+    glm::vec3 direction = glm::vec3(0.0f, -1.0f, 0.0f);
+    glm::vec3 color = glm::vec3(1.0f);
+    float intensity = 1.0f;
+
+    // for attenuation
+    float constant = 1.0f;
+    float linear = 0.09f;
+    float quadratic = 0.032f;
+
+    float innerCutoff = glm::cos(glm::radians(12.5f));
+    float outerCutoff = glm::cos(glm::radians(17.5f));
+
+    bool castShadow = false;
+};
