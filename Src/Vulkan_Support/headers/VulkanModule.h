@@ -22,6 +22,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "stb_image.h"
+#include "tiny_obj_loader.h"
+
 #include "vulkan/vulkan_core.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -38,7 +41,7 @@
 
 #include "common.h"
 
-#define VMA_IMPLEMENTATION
+
 #include "Scene.h"
 #include "UniformData.h"
 #include "imgui.h"
@@ -247,8 +250,8 @@ class VulkanModule {
 	const std::vector<const char *> deviceExtensions = {
 	  VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
-	// std::vector<Vertex> vertices = {};
-	// std::vector<uint32_t> indices = {};
+	std::vector<Vertex> vertices = {};
+	std::vector<uint32_t> indices = {};
 
 	std::unique_ptr<Scene> scene;  // include (loaders, lightings ...)
 

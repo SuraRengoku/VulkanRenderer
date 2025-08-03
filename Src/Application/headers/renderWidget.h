@@ -1,14 +1,17 @@
 #pragma once
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <memory>
+#include "GLFW/glfw3.h"
+#include "VulkanModule.h"
 #include "Widget.h"
 #include "common.h"
 
-class renderWidget : public Widget {
+#define __USE_VULKAN__
+
+class RenderWidget : public Widget {
    public:
-	renderWidget(GLFWwindow *window, int, int, int, int, bool, bool, WidgetStatus);
-	~renderWidget();
+	RenderWidget(GLFWwindow *window, uint32_t, uint32_t, uint32_t, uint32_t, bool, bool, WidgetStatus);
+	~RenderWidget();
 	void display() override;
 	void update() override;
 	
@@ -22,5 +25,6 @@ class renderWidget : public Widget {
 	void disable() override;
 
    private:
+	void loadVulkan();
 	GLFWwindow *window;
 };

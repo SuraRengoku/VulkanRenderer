@@ -4,13 +4,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-#define TINYOBJLOADER_IMPLEMENTATION
 #include "UniformData.h"
 #include "common.h"
+
+#include "stb_image.h"
 #include "tiny_obj_loader.h"
 
 class Loader {
@@ -24,7 +23,7 @@ class Loader {
 	static std::shared_ptr<Loader> createShared();
 	// read dirs
 	static std::unique_ptr<Loader> createWithAsset(
-	  const std::string& assetPath); 
+	  const std::string& assetPath);
 	static std::shared_ptr<Loader> createSharedWithAsset(
 	  const std::string& assetPath);
 

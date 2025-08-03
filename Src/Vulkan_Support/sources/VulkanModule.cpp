@@ -1,6 +1,10 @@
 #include "UniformData.h"
 #include "VulkanModule.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#define TINYOBJLOADER_IMPLEMENTATION
+#define VMA_IMPLEMENTATION
+
 VulkanModule::VulkanModule(uint32_t width, uint32_t height, int maxFIF) {
 	WIDTH = width;
 	HEIGHT = height;
@@ -2104,7 +2108,7 @@ void VulkanModule::cleanup() {
 	//        }
 	//        vkDestroySwapchainKHR(device, swapChain, nullptr);
 	vkDestroyDevice(device, nullptr);
-	if(enableValidationLayers) {
+	if (enableValidationLayers) {
 		DestroyDebugUtilsMessengerEXT(instance, callback, nullptr);
 	}
 	vkDestroySurfaceKHR(instance, surface, nullptr);

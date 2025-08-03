@@ -1,7 +1,7 @@
 #include "Widget.h"
 #include "common.h"
 
-Widget::Widget(int x, int y, int width, int height, bool vis, bool resize,
+Widget::Widget(uint32_t x, uint32_t y, uint32_t width, uint32_t height, bool vis, bool resize,
 			   WidgetStatus status)
 	: x(x),
 	  y(y),
@@ -9,27 +9,29 @@ Widget::Widget(int x, int y, int width, int height, bool vis, bool resize,
 	  height(height),
 	  visible(vis),
 	  resizeable(resize),
-	  status(status) {}
+	  status(status) {
 
-void Widget::setPosition(int x, int y) {
+}
+
+void Widget::setPosition(uint32_t x, uint32_t y) {
 	this -> x = x;
 	this -> y = y;
 }
 
-void Widget::setSize(int width, int heigth) {
+void Widget::setSize(uint32_t width, uint32_t height) {
 	this -> width = width;
 	this -> height = height;
 }
 
-void Widget::setRect(int x, int y, int width, int heigth) {
+void Widget::setRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
 	setPosition(x, y);
-	setSize(width, heigth);
+	setSize(width, height);
 }
 
-int Widget::getX() const { return x; }
-int Widget::getY() const { return y; }
-int Widget::getWidth() const { return width; }
-int Widget::getHeight() const { return height; }
+uint32_t Widget::getX() const { return x; }
+uint32_t Widget::getY() const { return y; }
+uint32_t Widget::getWidth() const { return width; }
+uint32_t Widget::getHeight() const { return height; }
 bool Widget::visibility() const { return visible; }
 bool Widget::resizibility() const { return resizeable; }
 WidgetStatus Widget::getStatus() const { return status; }

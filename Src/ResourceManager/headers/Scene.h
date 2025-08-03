@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-#include <iostream>
-#include <ratio>
 #include <exception>
+#include <iostream>
+#include <memory>
+#include <ratio>
 
 #include "Lighting.h"
 #include "Loader.h"
