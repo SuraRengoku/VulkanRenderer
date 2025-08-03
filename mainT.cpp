@@ -383,6 +383,7 @@ class Application {
 		for (const auto &extension : extensions) {
 			std::cout << "\t" << extension.extensionName << "\n";
 		}
+		std::cout << "create vulkan instance" << std::endl;
 	}  //
 
 	void createSurface() {

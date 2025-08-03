@@ -175,6 +175,8 @@ void VulkanModule::createInstance() {
 	for (const auto &extension : extensions) {
 		std::cout << "\t" << extension.extensionName << "\n";
 	}
+
+	printf("successfully create vulkan instance\n");
 }
 
 void VulkanModule::createSurface() {

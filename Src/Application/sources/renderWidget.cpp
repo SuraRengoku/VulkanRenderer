@@ -1,5 +1,7 @@
 #include "RenderWidget.h"
 #include <cstdio>
+#include "VulkanModule.h"
+#include "Widget.h"
 
 RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y, uint32_t width,
 						   uint32_t height, bool vis, bool resize,
@@ -7,7 +9,7 @@ RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y, uint32_t 
 	: Widget(x, y, width, height, vis, resize, status) {
 	this->window = window;
 #if defined(__USE_VULKAN__)
-	printf("load Vulkan module");
+	printf("loading Vulkan module......\n");
 	loadVulkan();
 #elif defined(__USE_OPENGL__)
 #elif defined(__USE_DX11__)
@@ -18,7 +20,7 @@ RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y, uint32_t 
 RenderWidget::~RenderWidget() {}
 
 void RenderWidget::display() {
-
+	// TODO drawframe()
 }
 
 void RenderWidget::update() {}
@@ -38,5 +40,6 @@ void RenderWidget::enable() {}
 void RenderWidget::disable() {}
 
 void RenderWidget::loadVulkan() {
-	
+	VulkanModule vulkanModule(getWidth(), getHeight());
+	vulkanModule.createInstance();
 }

@@ -59,7 +59,7 @@ class VulkanModule {
 	void waitDeviceIdle();
 	void updateUniformBuffer(uint32_t currentImage);
 
-   private:
+//    private:
 	void initWindow();
 	void createInstance();
 	void setupDebugMessenger();
