@@ -24,8 +24,8 @@
 
 #include "stb_image.h"
 #include "tiny_obj_loader.h"
-
 #include "vulkan/vulkan_core.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -39,19 +39,19 @@
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-#include "common.h"
-
-
 #include "Scene.h"
 #include "UniformData.h"
+#include "common.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
 #include "vk_mem_alloc.h"
 
+
 class VulkanModule {
    public:
-	VulkanModule(GLFWwindow*, uint32_t width = 800, uint32_t height = 600, int maxFIF = 2);
+	VulkanModule(GLFWwindow *, uint32_t width = 800, uint32_t height = 600,
+				 int maxFIF = 2);
 	void initVulkan();
 	void cleanup();
 	void drawFrame();
@@ -67,14 +67,17 @@ class VulkanModule {
 	VkRenderPass getRenderPass() const { return renderPass; }
 	VkDescriptorPool getDescriptorPool() const { return descriptorPool; }
 	VkCommandPool getCommandPool() const { return commandPool; }
-	uint32_t getSwapChainImageCount() const { return static_cast<uint32_t>(swapChainImages.size()); }
-	uint32_t getGraphicsQueueFamily() const { 
-		QueueFamilyIndices indices = const_cast<VulkanModule*>(this)->findQueueFamilies(physicalDevice);
+	uint32_t getSwapChainImageCount() const {
+		return static_cast<uint32_t>(swapChainImages.size());
+	}
+	uint32_t getGraphicsQueueFamily() const {
+		QueueFamilyIndices indices =
+		  const_cast<VulkanModule *>(this)->findQueueFamilies(physicalDevice);
 		return static_cast<uint32_t>(indices.graphicsFamily);
 	}
 	VkSampleCountFlagBits getMSAASamples() const { return msaaSamples; }
 
-//    private:
+	//    private:
 	void initWindow();
 	void createInstance();
 	void setupDebugMessenger();
