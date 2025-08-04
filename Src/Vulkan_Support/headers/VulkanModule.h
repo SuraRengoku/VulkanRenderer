@@ -51,7 +51,7 @@
 
 class VulkanModule {
    public:
-	VulkanModule(uint32_t width = 800, uint32_t height = 600, int maxFIF = 2);
+	VulkanModule(GLFWwindow*, uint32_t width = 800, uint32_t height = 600, int maxFIF = 2);
 	void initVulkan();
 	void cleanup();
 	void drawFrame();

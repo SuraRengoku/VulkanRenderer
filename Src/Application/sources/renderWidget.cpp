@@ -1,7 +1,4 @@
 #include "RenderWidget.h"
-#include <cstdio>
-#include "VulkanModule.h"
-#include "Widget.h"
 
 RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y, uint32_t width,
 						   uint32_t height, bool vis, bool resize,
@@ -20,7 +17,13 @@ RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y, uint32_t 
 RenderWidget::~RenderWidget() {}
 
 void RenderWidget::display() {
-	// TODO drawframe()
+	if(vulkanModule) {
+		try {
+			vulkanModule->drawFrame();
+		} catch (const std::exception& e) {
+			std::printf("Vulkan draw frame error: %s\n", e.what());
+		}
+	}
 }
 
 void RenderWidget::update() {}
@@ -40,6 +43,34 @@ void RenderWidget::enable() {}
 void RenderWidget::disable() {}
 
 void RenderWidget::loadVulkan() {
-	VulkanModule vulkanModule(getWidth(), getHeight());
-	vulkanModule.createInstance();
+	if (this->window == nullptr) {
+		throw std::runtime_error("GLFWwindow is null! Cannot initialize Vulkan.");
+	}
+	
+	vulkanModule = std::make_unique<VulkanModule>(this->window, getWidth(), getHeight(), 2);
+	vulkanModule->createInstance();
+	vulkanModule->setupDebugMessenger();
+	vulkanModule->createSurface();
+	vulkanModule->pickPhysicalDevice();
+	vulkanModule->createLogicalDevice();
+	vulkanModule->createSwapChain();
+	vulkanModule->createImageViews();
+	vulkanModule->createRenderPass();
+	vulkanModule->createDescriptorSetLayout();
+	vulkanModule->createGraphicsPipeline();
+	vulkanModule->createCommandPool();
+	vulkanModule->createColorResources();
+	vulkanModule->createDepthResources();
+	vulkanModule->createFrameBuffers();
+	vulkanModule->createTextureImage("viking_room.png");
+	vulkanModule->createTextureImageView();
+	vulkanModule->createTextureSampler();
+	vulkanModule->loadModel("viking_room.obj");
+	vulkanModule->createVertexBuffer();
+	vulkanModule->createIndexBuffer();
+	vulkanModule->createUniformBuffers();
+	vulkanModule->createDescriptorPool();
+	vulkanModule->createDescriptorSets();
+	vulkanModule->createCommandBuffers();
+	vulkanModule->createSyncObjects();
 }

@@ -27,4 +27,5 @@ class RenderWidget : public Widget {
    private:
 	void loadVulkan();
 	GLFWwindow *window;
+	std::unique_ptr<VulkanModule> vulkanModule;
 };

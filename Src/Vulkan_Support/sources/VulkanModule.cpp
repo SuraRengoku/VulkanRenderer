@@ -1,11 +1,16 @@
 #include "UniformData.h"
 #include "VulkanModule.h"
+#include <vulkan/vulkan_core.h>
+#include <limits>
+#include <stdexcept>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
 #define VMA_IMPLEMENTATION
 
-VulkanModule::VulkanModule(uint32_t width, uint32_t height, int maxFIF) {
+VulkanModule::VulkanModule(GLFWwindow *window, uint32_t width, uint32_t height,
+						   int maxFIF) {
+	this->window = window;
 	WIDTH = width;
 	HEIGHT = height;
 	MAX_FRAMES_IN_FLIGHT = maxFIF;
@@ -184,6 +189,7 @@ void VulkanModule::createSurface() {
 		VK_SUCCESS) {
 		throw std::runtime_error("failed to create window surface");
 	}
+	printf("successfully create vulkan surface\n");
 }
 
 bool VulkanModule::checkValidationLayerSupport() {
@@ -329,6 +335,8 @@ void VulkanModule::setupDebugMessenger() {
 									 &callback) != VK_SUCCESS) {
 		throw std::runtime_error("failed to set up debug callback!");
 	}
+
+	printf("successfully set up debug messenger\n");
 }
 
 void VulkanModule::pickPhysicalDevice() {
@@ -354,6 +362,8 @@ void VulkanModule::pickPhysicalDevice() {
 	} else {
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
+
+	printf("successfully pick physical device\n");
 }
 
 int VulkanModule::rateDeviceSuitability(VkPhysicalDevice device) {
@@ -579,6 +589,8 @@ void VulkanModule::createLogicalDevice() {
 	// set into queue element
 	vkGetDeviceQueue(device, indices.graphicsFamily, 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily, 0, &presentQueue);
+
+	printf("successfully create logical device\n");
 }
 
 void VulkanModule::createSwapChain() {
@@ -650,6 +662,8 @@ void VulkanModule::createSwapChain() {
 
 	swapChainImageFormat = surfaceFormat.format;
 	swapChainExtent = extent;
+
+	printf("successfully create swap chain\n");
 }
 
 void VulkanModule::recreateSwapChain() {
@@ -688,6 +702,8 @@ void VulkanModule::createImageViews() {
 		  createImageView(swapChainImages[i], swapChainImageFormat,
 						  VK_IMAGE_ASPECT_COLOR_BIT, 1);
 	}
+
+	printf("successfully create image views\n");
 }
 
 void VulkanModule::createRenderPass() {
@@ -791,6 +807,8 @@ void VulkanModule::createRenderPass() {
 
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
+
+	printf("successfully create render pass\n");
 }
 
 void VulkanModule::createColorResources() {
@@ -807,6 +825,8 @@ void VulkanModule::createColorResources() {
 	  createImageView(colorImage, colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, 1);
 	transitionImageLayout(colorImage, colorFormat, VK_IMAGE_LAYOUT_UNDEFINED,
 						  VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 1);
+	
+	printf("successfully create color resources\n");
 }
 
 void VulkanModule::createDepthResources() {
@@ -821,6 +841,8 @@ void VulkanModule::createDepthResources() {
 	  createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, 1);
 	transitionImageLayout(depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED,
 						  VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
+	
+	printf("successfully create depth resources\n");
 }
 
 void VulkanModule::cleanupDepthResources() {
@@ -912,6 +934,8 @@ void VulkanModule::createTextureImage(const std::string &filename) {
 	stbi_image_free(pixels);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+	printf("successfully create texture image\n");
 }
 
 void VulkanModule::generateMipmaps(VkImage image, VkFormat imageFormat,
@@ -1161,6 +1185,8 @@ void VulkanModule::copyBufferToImage(VkBuffer buffer, VkImage image,
 void VulkanModule::createTextureImageView() {
 	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_UNORM,
 									   VK_IMAGE_ASPECT_COLOR_BIT, mipLevels);
+	
+	printf("successfully create texture image view\n");
 }
 
 VkImageView VulkanModule::createImageView(VkImage image, VkFormat format,
@@ -1225,6 +1251,8 @@ void VulkanModule::createTextureSampler() {
 		VK_SUCCESS) {
 		throw std::runtime_error("failed to create texture sampler");
 	}
+
+	printf("successfully create texture sampler\n");
 }
 
 VkCommandBuffer VulkanModule::beginSingleTimeCommands() {
@@ -1297,6 +1325,8 @@ void VulkanModule::loadModel(const std::string &filename) {
 			  uniqueVertices[vertex]);	// index starts from 0
 		}
 	}
+
+	printf("successfully load model\n");
 }
 
 void VulkanModule::createVertexBuffer() {
@@ -1327,6 +1357,8 @@ void VulkanModule::createVertexBuffer() {
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+	printf("successfully create vertex buffer\n");
 }
 
 void VulkanModule::createIndexBuffer() {
@@ -1353,6 +1385,8 @@ void VulkanModule::createIndexBuffer() {
 
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingDeviceMemory, nullptr);
+
+	printf("successfully create index buffer\n");
 }
 
 void VulkanModule::createUniformBuffers() {
@@ -1369,6 +1403,8 @@ void VulkanModule::createUniformBuffers() {
 		vkMapMemory(device, uniformBuffersMemory[i], 0, bufferSize, 0,
 					&uniformBuffersMapped[i]);
 	}
+
+	printf("successfully create uniform buffers\n");
 }
 
 void VulkanModule::createDescriptorPool() {
@@ -1388,6 +1424,8 @@ void VulkanModule::createDescriptorPool() {
 							   &descriptorPool) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor pool");
 	}
+
+	printf("successfully create descriptor pool\n");
 }
 
 void VulkanModule::createDescriptorSets() {
@@ -1445,6 +1483,8 @@ void VulkanModule::createDescriptorSets() {
 		  device, static_cast<uint32_t>(writeDescriptorSets.size()),
 		  writeDescriptorSets.data(), 0, nullptr);
 	}
+
+	printf("successfully create descriptor sets\n");
 }
 
 void VulkanModule::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer,
@@ -1545,6 +1585,8 @@ void VulkanModule::createDescriptorSetLayout() {
 									&descriptorSetLayout) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create descriptor set layout");
 	}
+
+	printf("successfully create descriptor set layout\n");
 }
 
 void VulkanModule::createGraphicsPipeline() {
@@ -1748,6 +1790,8 @@ void VulkanModule::createGraphicsPipeline() {
 
 	vkDestroyShaderModule(device, vertShaderModule, nullptr);
 	vkDestroyShaderModule(device, fragShaderModule, nullptr);
+
+	printf("successfully create graphics pipeline\n");
 }
 
 void VulkanModule::createFrameBuffers() {
@@ -1771,6 +1815,8 @@ void VulkanModule::createFrameBuffers() {
 			throw std::runtime_error("failed to create framebuffer!");
 		}
 	}
+
+	printf("successfully create frame buffers\n");
 }
 
 void VulkanModule::createCommandPool() {
@@ -1790,6 +1836,8 @@ void VulkanModule::createCommandPool() {
 		VK_SUCCESS) {
 		throw std::runtime_error("failed to create command pool!");
 	}
+
+	printf("successfully create command pool\n");
 }
 
 void VulkanModule::createCommandBuffers() {
@@ -1810,6 +1858,8 @@ void VulkanModule::createCommandBuffers() {
 		VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
+
+	printf("successfully create command buffers\n");
 }
 
 void VulkanModule::recordCommandBuffer(VkCommandBuffer commandBuffer,
@@ -1929,6 +1979,8 @@ void VulkanModule::createSyncObjects() {
 			  "failed to create synchronization objects for a frame!");
 		}
 	}
+	
+	printf("successfully create sync objects\n");
 }
 
 void VulkanModule::updateUniformBuffer(uint32_t curImageIdx) {
@@ -1959,50 +2011,58 @@ void VulkanModule::updateUniformBuffer(uint32_t curImageIdx) {
 }
 
 void VulkanModule::drawFrame() {
-	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE,
-					UINT64_MAX);
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, std::numeric_limits<uint64_t>::max());
+	try{
+		vkResetFences(device, 1, &inFlightFences[currentFrame]);
+	} catch (const std::exception &e) {
+		throw std::runtime_error(e.what());		
+	}
+
+	/**
+	 * get a frame from swap chain
+	 * execute rendering commands in commandbuffer on frame attachments
+	 * return rendered frame into swap chain to present
+	 */
 
 	uint32_t imageIndex;
-	VkResult result = vkAcquireNextImageKHR(
-	  device, swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame],
-	  VK_NULL_HANDLE, &imageIndex);
+	VkResult result = vkAcquireNextImageKHR(device, swapChain, std::numeric_limits<uint64_t>::max(), imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+	if(result == VK_ERROR_OUT_OF_DATE_KHR) {
 		recreateSwapChain();
 		return;
-	} else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+	} else if(result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
-	updateUniformBuffer(imageIndex);
+	updateUniformBuffer(currentFrame);
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
+	vkResetCommandBuffer(commandBuffers[currentFrame], 0);
+	recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
 
-	VkSubmitInfo submitInfo{};
+	VkSubmitInfo submitInfo = {};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
 	VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-	VkPipelineStageFlags waitStages[] = {
-	  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
-
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &commandBuffers[imageIndex];
+	submitInfo.pCommandBuffers = &commandBuffers[currentFrame];
 
+	// command finish
 	VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	vkResetFences(device, 1, &inFlightFences[currentFrame]);
-
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo,
-					  inFlightFences[currentFrame]) != VK_SUCCESS) {
+	// submit
+	if(vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
-	VkPresentInfoKHR presentInfo{};
+	VkPresentInfoKHR presentInfo = {};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
@@ -2013,13 +2073,16 @@ void VulkanModule::drawFrame() {
 
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ||
-		framebufferResized) {
+	if(result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
 		framebufferResized = false;
 		recreateSwapChain();
-	} else if (result != VK_SUCCESS) {
+	} else if(result != VK_SUCCESS) {
 		throw std::runtime_error("failed to present swap chain image!");
 	}
+
+	// presentInfo.pResults = nullptr;
+	// vkQueuePresentKHR(presentQueue, &presentInfo);
+	// vkQueueWaitIdle(presentQueue);
 
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
