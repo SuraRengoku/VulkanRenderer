@@ -10,6 +10,8 @@ class Widget {
 	virtual void display() = 0;
 	virtual void update() = 0;
 
+	virtual void renderImGui() {}
+
 	virtual void onClick() = 0;
 	virtual void onHover() = 0;
 	virtual void onKeyEvent() = 0;

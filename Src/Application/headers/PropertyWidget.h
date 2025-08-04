@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "VulkanModule.h"
 #include "Widget.h"
 #include "common.h"
@@ -10,6 +11,8 @@ class PropertyWidget : public Widget {
 	~PropertyWidget();
 	void display() override;
 	void update() override;
+
+	void renderImGui() override;
 	
 	void onClick() override;
 	void onHover() override;
@@ -22,4 +25,6 @@ class PropertyWidget : public Widget {
 
    private:
 	GLFWwindow *window;
+
+	std::unique_ptr<Loader> selectedObject; // TODO waiting to be replaced by Object
 };

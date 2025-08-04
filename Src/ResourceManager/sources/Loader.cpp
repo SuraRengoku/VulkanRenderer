@@ -51,7 +51,7 @@ void Loader::loadModel(const std::string& modelpath) {
 
 	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err,
 						  modelpath.c_str())) {
-		throw std::runtime_error("ResourceManager::Loader::loadModel " + warn +
+		throw std::runtime_error("ResourceManager::Loader::loadModel: " + warn +
 								 err);
 	}
 
@@ -93,7 +93,7 @@ std::vector<char> Loader::readFile(const std::string& filepath) {
 
 	if (!file.is_open()) {
 		throw std::runtime_error(
-		  "ResourceManager::Loader::readSPVFile failed to open file" +
+		  "ResourceManager::Loader::readSPVFile: failed to open file" +
 		  filepath);
 	}
 
@@ -114,7 +114,7 @@ void Loader::loadTexture(const std::string& texturepath, TextureType type) {
 
 	if (!data) {
 		throw std::runtime_error(
-		  "ResourceManager::Loader::loadTexture failed to load texture: " +
+		  "ResourceManager::Loader::loadTexture: failed to load texture: " +
 		  texturepath);
 	}
 
@@ -139,7 +139,7 @@ void Loader::loadAsset(const std::string assetpath) {
 const std::vector<Vertex>& Loader::getVertices() const {
 	if (this->vertices.empty()) {
 		throw std::runtime_error(
-		  "ResourceManager::Loader::getVertices no vertex data!");
+		  "ResourceManager::Loader::getVertices: no vertex data!");
 	}
 	return this->vertices;
 }
@@ -147,7 +147,7 @@ const std::vector<Vertex>& Loader::getVertices() const {
 const std::vector<uint32_t>& Loader::getIndices() const {
 	if (this->indices.empty()) {
 		throw std::runtime_error(
-		  "ResourceManager::Loader::getIndices no index data!");
+		  "ResourceManager::Loader::getIndices: no index data!");
 	}
 	return this->indices;
 }
@@ -156,7 +156,7 @@ const std::vector<char>& Loader::getSPV(SPVStage stage) const {
 	auto it = spvMap.find(stage);
 	if (it == spvMap.end()) {
 		throw std::runtime_error(
-		  "ResourceManager::Loader::getSPV SPV not loaded for stage " +
+		  "ResourceManager::Loader::getSPV: SPV not loaded for stage " +
 		  EnumToString(stage));
 	}
 	return it->second;
@@ -165,7 +165,7 @@ const std::vector<char>& Loader::getSPV(SPVStage stage) const {
 const TextureData& Loader::getTexture(TextureType type) const {
 	auto it = textureMap.find(type);
 	if (it == textureMap.end()) {
-		throw std::runtime_error("ResourceManager::Loader::getTexture " +
+		throw std::runtime_error("ResourceManager::Loader::getTexture: " +
 								 EnumToString(type) + " texture not loaded");
 	}
 	return it->second;
@@ -174,7 +174,7 @@ const TextureData& Loader::getTexture(TextureType type) const {
 const MaterialData& Loader::getMaterial(MaterialType type) const {
 	auto it = MaterialMap.find(type);
 	if (it == MaterialMap.end()) {
-		throw std::runtime_error("ResourceManager::Loader::getMaterial " +
+		throw std::runtime_error("ResourceManager::Loader::getMaterial: " +
 								 EnumToString(type) + " material not loaded");
 	}
 	return it->second;

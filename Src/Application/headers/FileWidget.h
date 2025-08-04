@@ -10,6 +10,8 @@ class FileWidget : public Widget{
 	~FileWidget();
 	void display() override;
 	void update() override;
+
+	void renderImGui() override;
 	
 	void onClick() override;
 	void onHover() override;

@@ -3,6 +3,7 @@
 #include <memory>
 #include "GLFW/glfw3.h"
 #include "VulkanModule.h"
+#include "Scene.h"
 #include "Widget.h"
 #include "common.h"
 
@@ -14,6 +15,13 @@ class RenderWidget : public Widget {
 	~RenderWidget();
 	void display() override;
 	void update() override;
+
+	void renderImGui() override;
+	bool& getWireframeMode() { return wireframeMode; }
+	float& getFOV() { return fov; }
+	
+	// Vulkan对象访问方法（用于ImGui集成）
+	VulkanModule* getVulkanModule() { return vulkanModule.get(); }
 	
 	void onClick() override;
 	void onHover() override;
@@ -28,4 +36,9 @@ class RenderWidget : public Widget {
 	void loadVulkan();
 	GLFWwindow *window;
 	std::unique_ptr<VulkanModule> vulkanModule;
+	std::shared_ptr<Scene> scene;
+
+	bool wireframeMode = false;
+	float fov = 45.0f;
+	float backgroundColor[3] = {0.0f, 0.0f, 0.0f}; // RGB values for background color
 };

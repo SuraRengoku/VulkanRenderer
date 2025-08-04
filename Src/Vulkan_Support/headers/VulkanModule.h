@@ -59,6 +59,21 @@ class VulkanModule {
 	void waitDeviceIdle();
 	void updateUniformBuffer(uint32_t currentImage);
 
+	// ImGui集成所需的Vulkan对象访问方法
+	VkInstance getInstance() const { return instance; }
+	VkPhysicalDevice getPhysicalDevice() const { return physicalDevice; }
+	VkDevice getDevice() const { return device; }
+	VkQueue getGraphicsQueue() const { return graphicsQueue; }
+	VkRenderPass getRenderPass() const { return renderPass; }
+	VkDescriptorPool getDescriptorPool() const { return descriptorPool; }
+	VkCommandPool getCommandPool() const { return commandPool; }
+	uint32_t getSwapChainImageCount() const { return static_cast<uint32_t>(swapChainImages.size()); }
+	uint32_t getGraphicsQueueFamily() const { 
+		QueueFamilyIndices indices = const_cast<VulkanModule*>(this)->findQueueFamilies(physicalDevice);
+		return static_cast<uint32_t>(indices.graphicsFamily);
+	}
+	VkSampleCountFlagBits getMSAASamples() const { return msaaSamples; }
+
 //    private:
 	void initWindow();
 	void createInstance();
