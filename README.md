@@ -2,7 +2,7 @@
 #### this is a renderer based on Vulkan API; We may support OpenGL and DirectX later.
 
 ## Preview
-<img width="868" height="696" alt="vulkanpreview" src="https://github.com/user-attachments/assets/d8e68806-89ac-4c8d-88e2-bd89e2f1b66b" />
+<img width="912" height="740" alt="revision" src="https://github.com/user-attachments/assets/78bbeeb5-116a-4b01-9731-05746817519b" />
 
 ## Installation
 ### MacOS/Linux
