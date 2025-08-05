@@ -14,15 +14,21 @@ class RenderWidget : public Widget {
    public:
 	RenderWidget(GLFWwindow* window, uint32_t, uint32_t, uint32_t, uint32_t,
 				 bool, bool, WidgetStatus);
+	RenderWidget(GLFWwindow* window, WLayout, bool, bool, WidgetStatus);
 	~RenderWidget();
 	void display() override;
 	void update() override;
 
 	void renderImGui() override;
+	void renderCoordinateAxes();
+	void renderPerformanceOverlay();
+
+	const char* getTypeName() const override { return "RenderWidget"; }
+
 	bool& getWireframeMode() { return wireframeMode; }
 	float& getFOV() { return fov; }
 
-	// Vulkan对象访问方法（用于ImGui集成）
+	// Vulkan getter functions（for ImGui integrated）
 	VulkanModule* getVulkanModule() { return vulkanModule.get(); }
 
 	void onClick() override;

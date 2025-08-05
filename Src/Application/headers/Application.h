@@ -5,8 +5,9 @@
 
 #include "FileWidget.h"
 #include "PropertyWidget.h"
+#include "RenderWidget.h"
+#include "RenderTreeWidget.h"
 #include "Widget.h"
-#include "renderWidget.h"
 
 #define __DEBUG__
 
@@ -27,11 +28,7 @@ class Application {
 	void processImGuiFrame();
 	void cleanupImGui();
 
-	// ImGui辅助渲染方法
-	void renderCoordinateAxes();
-	void renderPerformanceOverlay();
-
-	// Vulkan辅助方法
+	// Vulkan Auxiliary
 	VkCommandBuffer beginSingleTimeCommands(VulkanModule* vulkanModule);
 	void endSingleTimeCommands(VulkanModule* vulkanModule,
 							   VkCommandBuffer commandBuffer);
@@ -40,10 +37,13 @@ class Application {
 	static void ApplicationResizedCallback(GLFWwindow* window, int width,
 										   int height);
 
+	inline void debugWidgetPosSize(Widget* widget);
+
 	uint32_t X;
 	uint32_t Y;
 	uint32_t WIDTH;
 	uint32_t HEIGHT;
+	WLayout layout;
 	GLFWwindow* window;
 	bool ApplicationWindowResized = false;
 
@@ -52,9 +52,16 @@ class Application {
 
 	// quick get (for ImGUI)
 	RenderWidget* renderWidget = nullptr;
+	RenderTreeWidget* renderTreeWidget = nullptr;
 	FileWidget* fileWidget = nullptr;
 	PropertyWidget* propertyWidget = nullptr;
 
-	// ImGui Vulkan资源
+	// widget layout
+	WLayoutScale renderLayoutScale;
+	WLayoutScale renderTreeLayoutScale;
+	WLayoutScale fileLayoutScale;
+	WLayoutScale PropertyLayoutScale;
+
+	// ImGui Vulkan Resources
 	VkDescriptorPool imguiDescriptorPool = VK_NULL_HANDLE;
 };

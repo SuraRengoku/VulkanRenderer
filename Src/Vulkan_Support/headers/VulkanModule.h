@@ -47,11 +47,11 @@
 #include "imgui_impl_vulkan.h"
 #include "vk_mem_alloc.h"
 
-
 class VulkanModule {
    public:
 	VulkanModule(GLFWwindow *, uint32_t width = 800, uint32_t height = 600,
-				 int maxFIF = 2);
+				 int maxFIF = 2, uint32_t renderW = 0, uint32_t renderH = 0,
+				 uint32_t renderX = 0, uint32_t renderY = 0);
 	void initVulkan();
 	void cleanup();
 	void drawFrame();
@@ -286,4 +286,10 @@ class VulkanModule {
 	uint32_t WIDTH;
 	uint32_t HEIGHT;
 	int MAX_FRAMES_IN_FLIGHT;
+
+	// rendering area
+	uint32_t renderWidth;
+	uint32_t renderHeight;
+	uint32_t renderX;
+	uint32_t renderY;
 };

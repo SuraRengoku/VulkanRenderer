@@ -11,11 +11,19 @@
 #define VMA_IMPLEMENTATION
 
 VulkanModule::VulkanModule(GLFWwindow *window, uint32_t width, uint32_t height,
-						   int maxFIF) {
+						   int maxFIF, uint32_t renderW, uint32_t renderH,
+						   uint32_t renderX, uint32_t renderY) {
 	this->window = window;
 	WIDTH = width;
 	HEIGHT = height;
 	MAX_FRAMES_IN_FLIGHT = maxFIF;
+
+	// 设置渲染区域，如果未指定则使用窗口全尺寸
+	this->renderWidth = (renderW == 0) ? width : renderW;
+	this->renderHeight = (renderH == 0) ? height : renderH;
+	this->renderX = renderX;
+	this->renderY = renderY;
+
 	scene = Scene::create();
 }
 
@@ -1955,17 +1963,17 @@ void VulkanModule::recordCommandBuffer(VkCommandBuffer commandBuffer,
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
 						  graphicsPipeline);
 		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = 0.0f;
-		viewport.width = (float)swapChainExtent.width;
-		viewport.height = (float)swapChainExtent.height;
+		viewport.x = (float)renderX;
+		viewport.y = (float)renderY;
+		viewport.width = (float)renderWidth;
+		viewport.height = (float)renderHeight;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
 		VkRect2D scissor = {};
-		scissor.offset = {0, 0};
-		scissor.extent = swapChainExtent;
+		scissor.offset = {(int32_t)renderX, (int32_t)renderY};
+		scissor.extent = {renderWidth, renderHeight};
 		vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 		VkBuffer vertexBuffers[] = {vertexBuffer};

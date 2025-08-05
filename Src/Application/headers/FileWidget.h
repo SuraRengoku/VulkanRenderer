@@ -1,18 +1,23 @@
 #pragma once
 
-#include "VulkanModule.h"
+#include <GLFW/glfw3.h>
+
 #include "Widget.h"
 #include "common.h"
 
-class FileWidget : public Widget{
+class FileWidget : public Widget {
    public:
-	FileWidget(GLFWwindow *window, uint32_t, uint32_t, uint32_t, uint32_t, bool, bool, WidgetStatus);
+	FileWidget(GLFWwindow* window, uint32_t, uint32_t, uint32_t, uint32_t, bool,
+			   bool, WidgetStatus);
+	FileWidget(GLFWwindow* window, WLayout, bool, bool, WidgetStatus);
 	~FileWidget();
 	void display() override;
 	void update() override;
 
 	void renderImGui() override;
-	
+
+	const char* getTypeName() const override { return "FileWidget"; }
+
 	void onClick() override;
 	void onHover() override;
 	void onKeyEvent() override;
@@ -23,5 +28,5 @@ class FileWidget : public Widget{
 	void disable() override;
 
    private:
-	GLFWwindow *window;
+	GLFWwindow* window;
 };

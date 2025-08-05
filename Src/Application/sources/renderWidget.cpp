@@ -4,9 +4,11 @@
 #include <string>
 
 #include "RenderWidget.h"
+#include "Widget.h"
+#include "common.h"
 #include "imgui.h"
 
-RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y,
+RenderWidget::RenderWidget(GLFWwindow* window, uint32_t x, uint32_t y,
 						   uint32_t width, uint32_t height, bool vis,
 						   bool resize, WidgetStatus status)
 	: Widget(x, y, width, height, vis, resize, status) {
@@ -15,10 +17,16 @@ RenderWidget::RenderWidget(GLFWwindow *window, uint32_t x, uint32_t y,
 	printf("loading Vulkan module......\n");
 	loadVulkan();
 #elif defined(__USE_OPENGL__)
-#elif defined(__USE_DX11__)
-#elif defined(__USE_DX12__)
+	printf("loading OpenGL module.....n");
+#elif defined(__WIN32__) && definde(__USE_DX11__)
+#elif defined(__WIN32__) && defined(__USE_DX12__)
 #endif
 }
+
+RenderWidget::RenderWidget(GLFWwindow* window, WLayout layout, bool vis,
+						   bool resize, WidgetStatus status)
+	: RenderWidget(window, layout.x, layout.y, layout.width, layout.height, vis,
+				   resize, status) {}
 
 RenderWidget::~RenderWidget() {
 	if (vulkanModule) {
@@ -36,7 +44,12 @@ void RenderWidget::update() {
 }
 
 void RenderWidget::renderImGui() {
-	// RenderWidget的ImGui界面：仅渲染设置控制面板
+	// ImVec2 windowPos = ImVec2(this->getX(), this->getY());
+	// ImVec2 windowSize = ImVec2(this->getWidth(), this->getHeight());
+
+	// ImGui::SetNextWindowPos(windowPos);
+	// ImGui::SetNextWindowSize(windowSize);
+
 	if (ImGui::Begin("Render Settings")) {
 		ImGui::Text("3D Rendering Controls");
 		ImGui::Separator();
@@ -52,7 +65,7 @@ void RenderWidget::renderImGui() {
 				// resetCamera();
 			}
 
-			// 可以添加更多相机控制
+			// camera controlling
 			static float cameraSpeed = 1.0f;
 			ImGui::SliderFloat("Camera Speed", &cameraSpeed, 0.1f, 5.0f);
 		}
@@ -65,6 +78,75 @@ void RenderWidget::renderImGui() {
 			ImGui::SliderFloat("Ambient Strength", &ambientStrength, 0.0f,
 							   1.0f);
 		}
+	}
+
+	this->renderCoordinateAxes();
+	this->renderPerformanceOverlay();
+	ImGui::End();
+}
+
+void RenderWidget::renderCoordinateAxes() {
+	// left bottom corner
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 windowPos = ImVec2(50, io.DisplaySize.y - 100);
+	ImVec2 windowSize = ImVec2(80, 80);
+
+	ImGui::SetNextWindowPos(windowPos);
+	ImGui::SetNextWindowSize(windowSize);
+	ImGui::SetNextWindowBgAlpha(1.0f);
+
+	if (ImGui::Begin(
+		  "Coordinate Axes", nullptr,
+		  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground)) {
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImVec2 center = ImVec2(windowPos.x + 40, windowPos.y + 40);
+
+		// X axis (red)
+		drawList->AddLine(center, ImVec2(center.x + 30, center.y),
+						  IM_COL32(255, 0, 0, 255), 2.0f);
+		drawList->AddText(ImVec2(center.x + 32, center.y - 8),
+						  IM_COL32(255, 0, 0, 255), "X");
+
+		// Y axis (green)
+		drawList->AddLine(center, ImVec2(center.x, center.y - 30),
+						  IM_COL32(0, 255, 0, 255), 2.0f);
+		drawList->AddText(ImVec2(center.x + 2, center.y - 32),
+						  IM_COL32(0, 255, 0, 255), "Y");
+
+		// Z axis (blue) - depth
+		drawList->AddLine(center, ImVec2(center.x - 20, center.y + 20),
+						  IM_COL32(0, 0, 255, 255), 2.0f);
+		drawList->AddText(ImVec2(center.x - 25, center.y + 22),
+						  IM_COL32(0, 0, 255, 255), "Z");
+	}
+	ImGui::End();
+}
+
+void RenderWidget::renderPerformanceOverlay() {
+	// right top corner
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 windowPos = ImVec2(io.DisplaySize.x - 200, 25);
+
+	ImGui::SetNextWindowPos(windowPos);
+	ImGui::SetNextWindowBgAlpha(0.3f);
+
+	if (ImGui::Begin(
+		  "Performance", nullptr,
+		  ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse |
+			ImGuiWindowFlags_NoBackground)) {
+
+		ImGui::Text("FPS: %.1f", io.Framerate);
+		ImGui::Text("Frame Time: %.3f ms", 1000.0f / io.Framerate);
+
+		// performance information
+		ImGui::Text("Render Mode: %s",
+					this->getWireframeMode() ? "Wireframe" : "Solid");
+		ImGui::Text("FOV: %.1f°", this->getFOV());
 	}
 	ImGui::End();
 }
@@ -91,9 +173,10 @@ void RenderWidget::loadVulkan() {
 	}
 
 	try {
-		vulkanModule = std::make_unique<VulkanModule>(this->window, getWidth(),
-													  getHeight(), 2);
-	} catch (const std::exception &e) {
+		vulkanModule = std::make_unique<VulkanModule>(
+		  this->window, 800, 600, 2, this->getWidth() + 800,
+		  this->getHeight() + 600, this->getX(), this->getY());
+	} catch (const std::exception& e) {
 		std::string errorMsg = "Application::RenderWidget::loadVulkan: ";
 		errorMsg += e.what();
 		throw std::runtime_error(errorMsg);

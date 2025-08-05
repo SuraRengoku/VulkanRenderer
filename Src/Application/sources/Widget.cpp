@@ -1,26 +1,28 @@
 #include "Widget.h"
 #include "common.h"
 
-Widget::Widget(uint32_t x, uint32_t y, uint32_t width, uint32_t height, bool vis, bool resize,
-			   WidgetStatus status)
+Widget::Widget(uint32_t x, uint32_t y, uint32_t width, uint32_t height,
+			   bool vis, bool resize, WidgetStatus status)
 	: x(x),
 	  y(y),
 	  width(width),
 	  height(height),
 	  visible(vis),
 	  resizeable(resize),
-	  status(status) {
+	  status(status) {}
 
-}
+Widget::Widget(WLayout layout, bool vis, bool resize, WidgetStatus status)
+	: Widget(layout.x, layout.y, layout.width, layout.height, vis, resize,
+			 status) {}
 
 void Widget::setPosition(uint32_t x, uint32_t y) {
-	this -> x = x;
-	this -> y = y;
+	this->x = x;
+	this->y = y;
 }
 
 void Widget::setSize(uint32_t width, uint32_t height) {
-	this -> width = width;
-	this -> height = height;
+	this->width = width;
+	this->height = height;
 }
 
 void Widget::setRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
